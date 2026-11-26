@@ -599,6 +599,26 @@ $('sugg').innerHTML=SUG.map(s=>`<button class="chip" type="button">${esc(s)}</bu
 $('sugg').onclick=e=>{if(e.target.tagName==='BUTTON'){$('msg').value=e.target.textContent;$('form').requestSubmit()}};
 
 function offline(text){const t=text.toLowerCase();
+  const STOP=/^(компот|чай|кава|морс|лимонад|узвар|вин|вина|вино|випит|пити|напо|напій|обрат|підійд|пасує|порад|калор|ккал|соус|покуп|додай|порці|скільк|зроби|приго|рецеп|якийс|якесь|треба|хочу|будь|можна|краще|келих)/;
+  const dishWords=t.replace(/[^а-яіїєґ' ]/g,' ').split(/\s+/).filter(w=>w.length>3&&!STOP.test(w));
+  const nz=s=>String(s).toLowerCase().replace(/[іїи]/g,'и');const stem=w=>{w=nz(w);return w.slice(0,w.length<=5?4:5)};const stems=dishWords.map(stem);
+  const dish=()=>{if(!stems.length)return null;let best=null,bs=0;R.forEach(r=>{const nm=nz(r.name),ing=nz((r.ingredients||[]).join(' '));const s=stems.reduce((a,w)=>a+(nm.includes(w)?3:ing.includes(w)?1:0),0);if(s>bs){bs=s;best=r}});return best};
+  const fmtD=d=>'• '+d.name+(d.temp&&d.temp!=='—'?' ('+d.temp+')':'')+' — '+d.note;
+  if(/вин|напо|напій|випит|пити|до чого|компот|чай|кав[аиу]|морс|лимонад|узвар/.test(t)&&!/соус/.test(t)){
+    const wantWine=/вин/.test(t);const r=dish();
+    if(r){let p=pairFor(r);if(wantWine){const w=D.drinks.filter(d=>d.group==='wine'&&p.includes(d));if(!w.length){const keys=[...r.ingredients,r.category].map(x=>x.toLowerCase());const best=D.drinks.filter(d=>d.group==='wine').find(d=>d.pairs.some(k=>keys.some(x=>x.includes(k.toLowerCase()))));if(best)p=[best,...p]}}
+      if(wantWine)p=[...p.filter(d=>d.group==='wine'),...p.filter(d=>d.group!=='wine')];
+      if(!p.slice(0,3).some(d=>d.group!=='wine'))p=[...p.slice(0,2),p.find(d=>d.group!=='wine')||D.drinks.find(d=>d.group!=='wine')];
+      open(R.indexOf(r));return 'До страви «'+r.name+'»:\n'+p.slice(0,3).map(fmtD).join('\n')+'\nБезалкогольний варіант — завжди поруч.'}
+    const ws=D.drinks.filter(d=>wantWine?d.group==='wine':true).slice(0,6);
+    return 'Назвіть страву чи продукт — підберу точніше (наприклад: «вино до лосося»). Загалом:\n'+ws.map(fmtD).join('\n')}
+  if(/соус/.test(t)){const s=D.sauces.find(s=>stems.some(w=>nz(s.for).includes(w)))||D.sauces.find(s=>stems.some(w=>nz(s.name).includes(w)));
+    if(s){showTab('s');return s.name+' (до страв: '+s.for+', '+s.time+'):\n'+s.amounts.map(([a,b])=>'• '+a+' — '+b).join('\n')}
+    return 'Соуси в бібліотеці:\n'+D.sauces.map(s=>'• '+s.name+' — до: '+s.for).join('\n')}
+  if(/калор|ккал/.test(t)){const r=dish();if(!r)return 'Назвіть страву з бази — порахую калорії на порцію.';const n=nutrition(r);open(R.indexOf(r));
+    return n?'«'+r.name+'»: ≈ '+n.kcal+' ккал на порцію · Б '+n.p+' г · Ж '+n.f+' г · В '+n.c+' г ('+n.src+').':'Для «'+r.name+'» недостатньо даних, щоб оцінити калорії.'}
+  if(/покуп/.test(t)){const r=dish();if(!r)return 'Назвіть страву з бази — додам її продукти до покупок.';const n=+(t.match(/(\d+)\s*порц/)||[])[1]||r.servings||4;addShop(r,n);
+    return 'Додала продукти для «'+r.name+'» на '+n+' порц. у вкладку «Меню і покупки».'}
   const L="[а-яіїєґ']*";const m=t.match(new RegExp("(\\d+(?:[.,]\\d+)?)\\s*(склянк"+L+"|cups?|чашк"+L+"|ст\\.?\\s?л\\.?|ч\\.?\\s?л\\.?|мл|кг|г|унці"+L+"|фунт"+L+"|°?f|°?c)(?![а-яіїєґa-z])","i"));
   if(m){const u=m[2].startsWith('склянк')?'склянка':m[2].startsWith('чашк')||m[2].startsWith('cup')?'cup':m[2].startsWith('унці')?'унція':m[2];
     const tgt=/[°]?f$/.test(u)?'°C':/[°]?c$/.test(u)?'°F':['г','кг'].includes(u)?'склянка':'г';
