@@ -13,6 +13,7 @@ ChefBot допомагає вдома біля плити: знаходить р
 | Ноутбук (Colab) | [Final_Komanich_ChefBot.ipynb](https://colab.research.google.com/drive/1uCtRfBXa78VRb9Gx939Abd2KPnJ_-UNm) |
 | Презентація | [claude.ai/artifact/1mq3xPMbVJhdC6zeLvFcvy](https://claude.ai/artifact/1mq3xPMbVJhdC6zeLvFcvy) · PDF у `presentation/` |
 | Демо (веб-ChefBot) | [claude.ai/artifact/G55pdsjBEi92KtutRKNqar](https://claude.ai/artifact/G55pdsjBEi92KtutRKNqar) |
+| Веб-ChefBot як файл | `web/index.html` — відкривається в будь-якому браузері без інтернету й ключів (офлайн-режим: пошук, міри, замінники кодом) |
 | Agno-версія (ДЗ 11) | [Colab](https://colab.research.google.com/drive/1xmp0pOkfANyXrZX4zRuci4iFqONz_fVJ) · копія в `notebooks/` |
 
 ## Структура
@@ -30,6 +31,8 @@ chefbot-final/
 │   ├── images/                        # фото страв, соусів і напоїв
 │   ├── requirements.txt
 │   └── .streamlit/secrets.toml.example
+├── web/
+│   └── index.html                     # веб-ChefBot одним файлом: фото, рецепти, соуси, напої, режим готування
 └── presentation/
     └── Final_Komanich_ChefBot_slides.pdf
 ```
